@@ -11,6 +11,7 @@ import aiService from "@/services/ai.service.js";
 import { flattenRoadmapTopics, getTopicState, recomputeEnrollmentProgress } from "@/services/progress.service.js";
 
 const ensureObjectId = (value: string) => Types.ObjectId.isValid(value);
+const pickParam = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
 
 export const listSubjects = async (_req: Request, res: Response) => {
   const subjects = await SubjectModel.find().sort({ createdAt: -1 });
@@ -18,7 +19,8 @@ export const listSubjects = async (_req: Request, res: Response) => {
 };
 
 export const enrollSubject = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
   if (!ensureObjectId(subjectId)) {
     res.status(400).json({ message: "Invalid subject id" });
     return;
@@ -30,12 +32,12 @@ export const enrollSubject = async (req: Request, res: Response) => {
     return;
   }
 
-  let enrollment = await EnrollmentModel.findOne({ studentId: req.user!.userId, subjectId });
+  let enrollment = await EnrollmentModel.findOne({ studentId: userId, subjectId });
   if (!enrollment) {
     const topics = await flattenRoadmapTopics(subjectId);
 
     enrollment = await EnrollmentModel.create({
-      studentId: req.user!.userId,
+      studentId: userId,
       subjectId,
       progress: 0,
       studiedTopicIds: [],
@@ -45,19 +47,20 @@ export const enrollSubject = async (req: Request, res: Response) => {
     });
   }
 
-  const result = await recomputeEnrollmentProgress(req.user!.userId, subjectId);
+  const result = await recomputeEnrollmentProgress(userId, subjectId);
   res.status(200).json(result.enrollment);
 };
 
 export const getRoadmap = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
 
   if (!ensureObjectId(subjectId)) {
     res.status(400).json({ message: "Invalid subject id" });
     return;
   }
 
-  const enrollment = await EnrollmentModel.findOne({ studentId: req.user!.userId, subjectId });
+  const enrollment = await EnrollmentModel.findOne({ studentId: userId, subjectId });
   if (!enrollment) {
     res.status(404).json({ message: "Enroll in this subject first" });
     return;
@@ -69,7 +72,7 @@ export const getRoadmap = async (req: Request, res: Response) => {
     return;
   }
 
-  const { enrollment: refreshed } = await recomputeEnrollmentProgress(req.user!.userId, subjectId);
+  const { enrollment: refreshed } = await recomputeEnrollmentProgress(userId, subjectId);
   const topics = await flattenRoadmapTopics(subjectId);
 
   res.status(200).json({
@@ -80,14 +83,16 @@ export const getRoadmap = async (req: Request, res: Response) => {
 };
 
 export const getTopicDetail = async (req: Request, res: Response) => {
-  const { subjectId, topicId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
+  const topicId = pickParam(req.params.topicId);
 
   if (!ensureObjectId(subjectId) || !ensureObjectId(topicId)) {
     res.status(400).json({ message: "Invalid subject/topic id" });
     return;
   }
 
-  const enrollment = await EnrollmentModel.findOne({ studentId: req.user!.userId, subjectId });
+  const enrollment = await EnrollmentModel.findOne({ studentId: userId, subjectId });
   if (!enrollment) {
     res.status(404).json({ message: "Enroll in this subject first" });
     return;
@@ -103,13 +108,12 @@ export const getTopicDetail = async (req: Request, res: Response) => {
     StudyMaterialModel.find({ subjectId, topicId }).sort({ createdAt: -1 }),
     QuizModel.findOne({ subjectId, topicId }),
     QuizModel.findOne({ subjectId, topicId }).then((q) =>
-      q ? QuizAttemptModel.findOne({ studentId: req.user!.userId, quizId: q._id }).sort({ submittedAt: -1 }) : null,
+      q ? QuizAttemptModel.findOne({ studentId: userId, quizId: q._id }).sort({ submittedAt: -1 }) : null,
     ),
-    AiChatModel.findOne({ userId: req.user!.userId, subjectId, topicId }),
+    AiChatModel.findOne({ userId, subjectId, topicId }),
   ]);
 
   res.status(200).json({
-    topicId,
     ...topicState,
     materials,
     quizStatus: latestAttempt
@@ -122,14 +126,16 @@ export const getTopicDetail = async (req: Request, res: Response) => {
 };
 
 export const markTopicStudied = async (req: Request, res: Response) => {
-  const { subjectId, topicId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
+  const topicId = pickParam(req.params.topicId);
 
   if (!ensureObjectId(subjectId) || !ensureObjectId(topicId)) {
     res.status(400).json({ message: "Invalid subject/topic id" });
     return;
   }
 
-  const enrollment = await EnrollmentModel.findOne({ studentId: req.user!.userId, subjectId });
+  const enrollment = await EnrollmentModel.findOne({ studentId: userId, subjectId });
   if (!enrollment) {
     res.status(404).json({ message: "Enroll in this subject first" });
     return;
@@ -146,7 +152,7 @@ export const markTopicStudied = async (req: Request, res: Response) => {
     await enrollment.save();
   }
 
-  const result = await recomputeEnrollmentProgress(req.user!.userId, subjectId);
+  const result = await recomputeEnrollmentProgress(userId, subjectId);
 
   res.status(200).json({
     message: "Topic marked as studied",
@@ -155,7 +161,8 @@ export const markTopicStudied = async (req: Request, res: Response) => {
 };
 
 export const submitQuizAttempt = async (req: Request, res: Response) => {
-  const { quizId } = req.params;
+  const userId = String(req.user!.userId);
+  const quizId = pickParam(req.params.quizId);
   const { answers } = req.body as { answers: string[] };
 
   if (!ensureObjectId(quizId)) {
@@ -174,7 +181,7 @@ export const submitQuizAttempt = async (req: Request, res: Response) => {
     return;
   }
 
-  const enrollment = await EnrollmentModel.findOne({ studentId: req.user!.userId, subjectId: quiz.subjectId });
+  const enrollment = await EnrollmentModel.findOne({ studentId: userId, subjectId: quiz.subjectId });
   if (!enrollment) {
     res.status(404).json({ message: "Enroll in this subject first" });
     return;
@@ -198,7 +205,7 @@ export const submitQuizAttempt = async (req: Request, res: Response) => {
   const passed = score >= (quiz.passThreshold ?? 60);
 
   const attempt = await QuizAttemptModel.create({
-    studentId: req.user!.userId,
+    studentId: userId,
     quizId,
     score,
     passed,
@@ -206,7 +213,7 @@ export const submitQuizAttempt = async (req: Request, res: Response) => {
     submittedAt: new Date(),
   });
 
-  const result = await recomputeEnrollmentProgress(req.user!.userId, String(quiz.subjectId));
+  const result = await recomputeEnrollmentProgress(userId, String(quiz.subjectId));
 
   res.status(201).json({
     attempt,
@@ -216,14 +223,15 @@ export const submitQuizAttempt = async (req: Request, res: Response) => {
 };
 
 export const getProgress = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
 
   if (!ensureObjectId(subjectId)) {
     res.status(400).json({ message: "Invalid subject id" });
     return;
   }
 
-  const { enrollment, topics } = await recomputeEnrollmentProgress(req.user!.userId, subjectId);
+  const { enrollment, topics } = await recomputeEnrollmentProgress(userId, subjectId);
 
   res.status(200).json({
     subjectId,
@@ -235,7 +243,9 @@ export const getProgress = async (req: Request, res: Response) => {
 };
 
 export const askTopicAi = async (req: Request, res: Response) => {
-  const { subjectId, topicId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
+  const topicId = pickParam(req.params.topicId);
   const { question } = req.body;
 
   if (!question || typeof question !== "string") {
@@ -246,7 +256,7 @@ export const askTopicAi = async (req: Request, res: Response) => {
   const aiAnswer = await aiService.answerTopicQuestion(question);
 
   const thread = await AiChatModel.findOneAndUpdate(
-    { userId: req.user!.userId, subjectId, topicId },
+    { userId, subjectId, topicId },
     {
       $push: {
         messages: {

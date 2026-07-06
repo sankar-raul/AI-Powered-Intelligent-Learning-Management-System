@@ -7,9 +7,11 @@ import StudyMaterialModel from "@/models/studyMaterial/studyMaterial.model.js";
 import aiService from "@/services/ai.service.js";
 
 const ensureObjectId = (value: string) => Types.ObjectId.isValid(value);
+const pickParam = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
 
 export const createSubject = async (req: Request, res: Response) => {
   try {
+    const userId = String(req.user!.userId);
     const { title, description, difficulty, thumbnail } = req.body;
 
     if (!title || !description || !difficulty) {
@@ -22,7 +24,7 @@ export const createSubject = async (req: Request, res: Response) => {
       description,
       difficulty,
       thumbnail,
-      teacher_id: req.user!.userId,
+      teacher_id: userId,
     });
 
     res.status(201).json(subject);
@@ -32,19 +34,21 @@ export const createSubject = async (req: Request, res: Response) => {
 };
 
 export const listMySubjects = async (req: Request, res: Response) => {
-  const subjects = await SubjectModel.find({ teacher_id: req.user!.userId }).sort({ createdAt: -1 });
+  const userId = String(req.user!.userId);
+  const subjects = await SubjectModel.find({ teacher_id: userId }).sort({ createdAt: -1 });
   res.status(200).json(subjects);
 };
 
 export const updateSubject = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
   if (!ensureObjectId(subjectId)) {
     res.status(400).json({ message: "Invalid subject id" });
     return;
   }
 
   const subject = await SubjectModel.findOneAndUpdate(
-    { _id: subjectId, teacher_id: req.user!.userId },
+    { _id: subjectId, teacher_id: userId },
     req.body,
     { new: true },
   );
@@ -58,13 +62,14 @@ export const updateSubject = async (req: Request, res: Response) => {
 };
 
 export const deleteSubject = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
   if (!ensureObjectId(subjectId)) {
     res.status(400).json({ message: "Invalid subject id" });
     return;
   }
 
-  const deleted = await SubjectModel.findOneAndDelete({ _id: subjectId, teacher_id: req.user!.userId });
+  const deleted = await SubjectModel.findOneAndDelete({ _id: subjectId, teacher_id: userId });
 
   if (!deleted) {
     res.status(404).json({ message: "Subject not found" });
@@ -81,7 +86,8 @@ export const deleteSubject = async (req: Request, res: Response) => {
 };
 
 export const upsertRoadmap = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
   const { units } = req.body;
 
   if (!ensureObjectId(subjectId)) {
@@ -89,7 +95,7 @@ export const upsertRoadmap = async (req: Request, res: Response) => {
     return;
   }
 
-  const subject = await SubjectModel.findOne({ _id: subjectId, teacher_id: req.user!.userId });
+  const subject = await SubjectModel.findOne({ _id: subjectId, teacher_id: userId });
   if (!subject) {
     res.status(404).json({ message: "Subject not found" });
     return;
@@ -110,14 +116,15 @@ export const upsertRoadmap = async (req: Request, res: Response) => {
 };
 
 export const getRoadmap = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
 
   if (!ensureObjectId(subjectId)) {
     res.status(400).json({ message: "Invalid subject id" });
     return;
   }
 
-  const subject = await SubjectModel.findOne({ _id: subjectId, teacher_id: req.user!.userId });
+  const subject = await SubjectModel.findOne({ _id: subjectId, teacher_id: userId });
   if (!subject) {
     res.status(404).json({ message: "Subject not found" });
     return;
@@ -128,10 +135,12 @@ export const getRoadmap = async (req: Request, res: Response) => {
 };
 
 export const createMaterial = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
   const { topicId, title, description, type, fileUrl } = req.body;
+  const safeTopicId = pickParam(topicId);
 
-  if (!ensureObjectId(subjectId) || !ensureObjectId(topicId)) {
+  if (!ensureObjectId(subjectId) || !ensureObjectId(safeTopicId)) {
     res.status(400).json({ message: "Invalid subject/topic id" });
     return;
   }
@@ -141,7 +150,7 @@ export const createMaterial = async (req: Request, res: Response) => {
     return;
   }
 
-  const subject = await SubjectModel.findOne({ _id: subjectId, teacher_id: req.user!.userId });
+  const subject = await SubjectModel.findOne({ _id: subjectId, teacher_id: userId });
   if (!subject) {
     res.status(404).json({ message: "Subject not found" });
     return;
@@ -149,12 +158,12 @@ export const createMaterial = async (req: Request, res: Response) => {
 
   const material = await StudyMaterialModel.create({
     subjectId,
-    topicId,
+    topicId: safeTopicId,
     title,
     description,
     type,
     fileUrl,
-    uploadedBy: req.user!.userId,
+    uploadedBy: userId,
     uploadedAt: new Date(),
   });
 
@@ -162,7 +171,7 @@ export const createMaterial = async (req: Request, res: Response) => {
 };
 
 export const listMaterials = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const subjectId = pickParam(req.params.subjectId);
   const { topicId } = req.query;
 
   if (!ensureObjectId(subjectId)) {
@@ -180,10 +189,12 @@ export const listMaterials = async (req: Request, res: Response) => {
 };
 
 export const createQuiz = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const userId = String(req.user!.userId);
+  const subjectId = pickParam(req.params.subjectId);
   const { topicId, title, passThreshold, questions } = req.body;
+  const safeTopicId = pickParam(topicId);
 
-  if (!ensureObjectId(subjectId) || !ensureObjectId(topicId)) {
+  if (!ensureObjectId(subjectId) || !ensureObjectId(safeTopicId)) {
     res.status(400).json({ message: "Invalid subject/topic id" });
     return;
   }
@@ -193,7 +204,7 @@ export const createQuiz = async (req: Request, res: Response) => {
     return;
   }
 
-  const subject = await SubjectModel.findOne({ _id: subjectId, teacher_id: req.user!.userId });
+  const subject = await SubjectModel.findOne({ _id: subjectId, teacher_id: userId });
   if (!subject) {
     res.status(404).json({ message: "Subject not found" });
     return;
@@ -201,7 +212,7 @@ export const createQuiz = async (req: Request, res: Response) => {
 
   const quiz = await QuizModel.create({
     subjectId,
-    topicId,
+    topicId: safeTopicId,
     title,
     passThreshold: passThreshold ?? 60,
     questions,
@@ -211,7 +222,7 @@ export const createQuiz = async (req: Request, res: Response) => {
 };
 
 export const listQuizzes = async (req: Request, res: Response) => {
-  const { subjectId } = req.params;
+  const subjectId = pickParam(req.params.subjectId);
   const { topicId } = req.query;
 
   if (!ensureObjectId(subjectId)) {
