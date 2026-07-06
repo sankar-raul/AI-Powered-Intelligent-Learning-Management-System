@@ -1,12 +1,13 @@
-import { Types } from "mongoose"
+import { Types } from "mongoose";
 
 interface IQuizAttempts {
-    _id?: String,
-    studentId: Types.ObjectId,
-    quizId: Types.ObjectId,
-    score: number,
-    answers: [String],
-    submittedAt: Date
+  _id?: Types.ObjectId;
+  studentId: Types.ObjectId;
+  quizId: Types.ObjectId;
+  score: number;
+  passed: boolean;
+  answers: string[];
+  submittedAt: Date;
 }
 
-export default IQuizAttempts
+export default IQuizAttempts;

@@ -1,22 +1,25 @@
 import { Types } from "mongoose";
 
-export const AICHATROLES = ['user', 'system'] as const
-export type AiChatRoleType = (typeof AICHATROLES)[number]
+export const AICHATROLES = ["user", "system"] as const;
+export type AiChatRoleType = (typeof AICHATROLES)[number];
 
-interface IAiChat {
-    _id?: Types.ObjectId,
-    userId: Types.ObjectId,
-    subjectId: Types.ObjectId,
-    topicId?: Types.ObjectId,
-    messages: [{
-        role: AiChatRoleType,
-        content: String,
-        timestamp: Date,
-        doc_refs: [{
-            doc_id: Types.ObjectId,
-            doc_page?: number | null | undefined
-        }]
-    }],
+interface IAiChatMessage {
+  role: AiChatRoleType;
+  content: string;
+  timestamp: Date;
+  doc_refs?: {
+    doc_id: Types.ObjectId;
+    doc_page?: number | null;
+  }[];
 }
 
-export default IAiChat
+interface IAiChat {
+  _id?: Types.ObjectId;
+  userId: Types.ObjectId;
+  subjectId: Types.ObjectId;
+  topicId?: Types.ObjectId;
+  messages: IAiChatMessage[];
+}
+
+export type { IAiChatMessage };
+export default IAiChat;

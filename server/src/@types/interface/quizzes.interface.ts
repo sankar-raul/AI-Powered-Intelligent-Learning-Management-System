@@ -1,16 +1,20 @@
 import { Types } from "mongoose";
 
-interface IQuiz {
-    _id?: Types.ObjectId,
-    subjectId: Types.ObjectId,
-    topicId: Types.ObjectId,
-    title: String,
-    questions: [{
-        question: String,
-        oprtions: [String],
-        answer: String,
-        explanation: String
-    }]
+interface IQuizQuestion {
+  question: string;
+  options: string[];
+  answer: string;
+  explanation?: string;
 }
 
-export default IQuiz
+interface IQuiz {
+  _id?: Types.ObjectId;
+  subjectId: Types.ObjectId;
+  topicId: Types.ObjectId;
+  title: string;
+  passThreshold: number;
+  questions: IQuizQuestion[];
+}
+
+export type { IQuizQuestion };
+export default IQuiz;

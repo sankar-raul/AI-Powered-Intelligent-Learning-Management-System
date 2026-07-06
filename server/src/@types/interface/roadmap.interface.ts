@@ -1,14 +1,18 @@
-import { Types } from "mongoose"
-import ITopic from "./topic.interface.js"
+import { Types } from "mongoose";
+import ITopic from "./topic.interface.js";
 
-interface IRoadmap {
-    _id?: Types.ObjectId,
-    subject_id: Types.ObjectId,
-    units: [{
-        title: String,
-        topics: ITopic[]
-    }],
-    last_edited: Date
+interface IRoadmapUnit {
+  title: string;
+  order: number;
+  topics: ITopic[];
 }
 
-export default IRoadmap
+interface IRoadmap {
+  _id?: Types.ObjectId;
+  subject_id: Types.ObjectId;
+  units: IRoadmapUnit[];
+  last_edited?: Date;
+}
+
+export type { IRoadmapUnit };
+export default IRoadmap;

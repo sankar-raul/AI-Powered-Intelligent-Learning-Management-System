@@ -1,9 +1,10 @@
-import mongoose from "mongoose"
+import { Types } from "mongoose";
 
 interface ITopic {
-    _id?: mongoose.Types.ObjectId,
-    title: String,
-    description: String,
-    order: number
+  _id?: Types.ObjectId;
+  title: string;
+  description: string;
+  order: number;
 }
-export default ITopic
+
+export default ITopic;
