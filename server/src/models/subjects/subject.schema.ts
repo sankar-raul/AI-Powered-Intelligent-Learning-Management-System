@@ -1,0 +1,21 @@
+import ISubject, { SUBJECT_DIFFICULTIES } from "@/@types/interface/subject.interface.js";
+import { Schema } from "mongoose";
+
+const SubjectSchema = new Schema<ISubject>({
+    title: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    difficulty: {
+        type: String,
+        enum: SUBJECT_DIFFICULTIES
+    }
+}, {
+    timestamps: true
+})
+
+export default SubjectSchema

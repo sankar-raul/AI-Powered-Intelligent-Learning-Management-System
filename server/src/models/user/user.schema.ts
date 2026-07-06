@@ -1,4 +1,5 @@
 import IUser from "@/@types/interface/user.interface.js";
+import ROLE from "@/constants/role.constant.js";
 import mongoose, { Mongoose, Schema, Types } from "mongoose";
 
 const UserSchema = new Schema<IUser>({
@@ -15,6 +16,10 @@ const UserSchema = new Schema<IUser>({
         type: String,
         required: true
     },
+    role: {
+        type: String,
+        enum: Object.values(ROLE)
+    }
 }, {
     timestamps: true
 })
