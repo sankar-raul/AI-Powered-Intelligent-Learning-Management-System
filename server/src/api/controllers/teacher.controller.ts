@@ -8,6 +8,7 @@ import aiService from "@/services/ai.service.js";
 
 const ensureObjectId = (value: string) => Types.ObjectId.isValid(value);
 const pickParam = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
+const pickBody = (value: unknown) => (Array.isArray(value) ? value[0] : value);
 
 export const createSubject = async (req: Request, res: Response) => {
   try {
@@ -47,9 +48,21 @@ export const updateSubject = async (req: Request, res: Response) => {
     return;
   }
 
+  const updates = {
+    ...(typeof pickBody(req.body.title) === "string" ? { title: pickBody(req.body.title) } : {}),
+    ...(typeof pickBody(req.body.description) === "string" ? { description: pickBody(req.body.description) } : {}),
+    ...(typeof pickBody(req.body.thumbnail) === "string" ? { thumbnail: pickBody(req.body.thumbnail) } : {}),
+    ...(typeof pickBody(req.body.difficulty) === "string" ? { difficulty: pickBody(req.body.difficulty) } : {}),
+  };
+
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ message: "No valid fields supplied for update" });
+    return;
+  }
+
   const subject = await SubjectModel.findOneAndUpdate(
     { _id: subjectId, teacher_id: userId },
-    req.body,
+    updates,
     { new: true },
   );
 
@@ -106,9 +119,22 @@ export const upsertRoadmap = async (req: Request, res: Response) => {
     return;
   }
 
+  const safeUnits = units.map((unit: any, unitIndex: number) => ({
+    title: String(pickBody(unit?.title) ?? ""),
+    order: Number.isFinite(Number(pickBody(unit?.order))) ? Number(pickBody(unit?.order)) : unitIndex + 1,
+    topics: Array.isArray(unit?.topics)
+      ? unit.topics.map((topic: any, topicIndex: number) => ({
+          title: String(pickBody(topic?.title) ?? ""),
+          description: String(pickBody(topic?.description) ?? ""),
+          order:
+            Number.isFinite(Number(pickBody(topic?.order))) ? Number(pickBody(topic?.order)) : topicIndex + 1,
+        }))
+      : [],
+  }));
+
   const roadmap = await RoadmapModel.findOneAndUpdate(
     { subject_id: subjectId },
-    { units, last_edited: new Date() },
+    { units: safeUnits, last_edited: new Date() },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
 
