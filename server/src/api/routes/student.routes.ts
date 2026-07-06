@@ -10,10 +10,12 @@ import {
   submitQuizAttempt,
 } from "@/api/controllers/student.controller.js";
 import { requireAuth, requireRole } from "@/api/middlewares/auth.middleware.js";
+import { studentLimiter } from "@/api/middlewares/rateLimit.middleware.js";
 import ROLE from "@/constants/role.constant.js";
 
 const studentRouter = Router();
 
+studentRouter.use(studentLimiter);
 studentRouter.use(requireAuth, requireRole(ROLE.STUDENT, ROLE.ADMIN));
 
 studentRouter.get("/subjects", listSubjects);

@@ -5,7 +5,7 @@ import appConfig from "@/config/config.js";
 import { connectDB } from "@/config/dbConnector.js";
 import apiRouter from "@/api/routes/index.js";
 import softAuth from "@/api/middlewares/softAuth.middleware.js";
-import createRateLimiter from "@/api/middlewares/rateLimit.middleware.js";
+import { globalLimiter } from "@/api/middlewares/rateLimit.middleware.js";
 
 const app = express();
 
@@ -16,7 +16,7 @@ const app = express();
 app.use(express.json());
 app.use(helmet());
 app.use(cors());
-app.use(createRateLimiter({ windowMs: 60_000, limit: 120 }));
+app.use(globalLimiter);
 app.use(softAuth);
 
 app.get("/", (_req: Request, res: Response) => {

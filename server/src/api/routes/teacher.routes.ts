@@ -14,10 +14,12 @@ import {
   upsertRoadmap,
 } from "@/api/controllers/teacher.controller.js";
 import { requireAuth, requireRole } from "@/api/middlewares/auth.middleware.js";
+import { teacherLimiter } from "@/api/middlewares/rateLimit.middleware.js";
 import ROLE from "@/constants/role.constant.js";
 
 const teacherRouter = Router();
 
+teacherRouter.use(teacherLimiter);
 teacherRouter.use(requireAuth, requireRole(ROLE.TEACHER, ROLE.ADMIN));
 
 teacherRouter.post("/subjects", createSubject);
