@@ -7,7 +7,7 @@ interface IQuiz {
     title: String,
     questions: [{
         question: String,
-        oprtions: [String],
+        options: [String],
         answer: String,
         explanation: String
     }]
