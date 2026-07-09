@@ -11,8 +11,11 @@ export const appConfig = {
   S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
   S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
   AWS_S3_BUCKET: process.env.AWS_S3_BUCKET,
+  pinecone: {
+    apiKey: process.env.PINECONE_API_KEY,
+    indexName: process.env.PINECONE_INDEX_NAME,
+    indexHost: process.env.PINECONE_INDEX_HOST,
+    batchSize: 100,
+  },
 };
-
-console.log(appConfig);
-
 export default appConfig;

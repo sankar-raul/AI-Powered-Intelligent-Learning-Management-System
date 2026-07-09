@@ -1,31 +1,27 @@
 import IRoadmap from "@/@types/interface/roadmap.interface.js";
-import ITopic from "@/@types/interface/topic.interface.js";
-import { Schema, Types } from "mongoose";
+import { GENERAL_SCHEMA_OPTIONS } from "@/config/schemaOptions.js";
+import SCHEMA_DEFINITION_PROPERTY from "@/constants/model.constant.js";
+import { Schema } from "mongoose";
 
-const RoadmapSchema = new Schema<IRoadmap>(
+const RoadmapSchema: Schema<IRoadmap> = new Schema<IRoadmap>(
   {
-    last_edited: {
-      type: Date,
-    },
-    subject_id: {
-      type: Types.ObjectId,
-      required: true,
-    },
+    last_edited: SCHEMA_DEFINITION_PROPERTY.requiredDate,
+    subject_id: SCHEMA_DEFINITION_PROPERTY.requiredObjectId,
     units: [
       {
-        title: String,
+        title: SCHEMA_DEFINITION_PROPERTY.requiredString,
         topics: [
           {
-            title: String,
-            description: String,
-            order: Number,
+            title: SCHEMA_DEFINITION_PROPERTY.requiredString,
+            description: SCHEMA_DEFINITION_PROPERTY.requiredString,
+            order: SCHEMA_DEFINITION_PROPERTY.requiredNumber,
           },
         ],
       },
     ],
   },
   {
-    timestamps: true,
+    ...GENERAL_SCHEMA_OPTIONS,
   },
 );
 
