@@ -1,14 +1,13 @@
 import IChunk from "@/@types/interface/chunk.interface.js";
 import { get_encoding } from "tiktoken";
 
-export interface PageContent {
+export interface IPageContent {
   pageNumber: number | null;
   text: string;
 }
-
 class Chunk {
   static fire(
-    pages: PageContent[],
+    pages: IPageContent[],
     document_id: string,
     filename: string,
     subject_id: string,

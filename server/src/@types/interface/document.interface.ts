@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-export const DOC_TYPE = ["pdf", "doc", "image"] as const;
+export const DOC_TYPE = ["pdf", "doc", "image", "docx", "txt"] as const;
 export const DOC_ROLE = ["SYLLABUS", "NOTES"] as const;
 export type DocumentType = (typeof DOC_TYPE)[number];
 export type DocumentRoles = (typeof DOC_ROLE)[number];

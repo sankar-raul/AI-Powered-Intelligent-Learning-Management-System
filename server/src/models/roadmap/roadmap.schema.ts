@@ -5,16 +5,21 @@ import { Schema } from "mongoose";
 
 const RoadmapSchema: Schema<IRoadmap> = new Schema<IRoadmap>(
   {
-    last_edited: SCHEMA_DEFINITION_PROPERTY.requiredDate,
+    last_edited: SCHEMA_DEFINITION_PROPERTY.optionalNullDate,
     subject_id: SCHEMA_DEFINITION_PROPERTY.requiredObjectId,
     units: [
       {
         title: SCHEMA_DEFINITION_PROPERTY.requiredString,
+        description: SCHEMA_DEFINITION_PROPERTY.requiredString,
+        order: SCHEMA_DEFINITION_PROPERTY.requiredNumber,
         topics: [
           {
             title: SCHEMA_DEFINITION_PROPERTY.requiredString,
             description: SCHEMA_DEFINITION_PROPERTY.requiredString,
             order: SCHEMA_DEFINITION_PROPERTY.requiredNumber,
+            eastimated_study_time:
+              SCHEMA_DEFINITION_PROPERTY.optionalNullNumber,
+            difficulty: SCHEMA_DEFINITION_PROPERTY.requiredString,
           },
         ],
       },

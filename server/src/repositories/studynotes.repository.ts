@@ -2,12 +2,9 @@ import IStudynotes from "@/@types/interface/studynotes.interface.js";
 import StudynotesModel from "@/models/studynotes/studynotes.model.js";
 
 class StudyNotesRepository {
-  public static async createStudyNotes(
-    studyNotes: IStudynotes,
-  ): Promise<IStudynotes> {
+  public static async createStudyNotes(notes: IStudynotes[]): Promise<void> {
     try {
-      const newStudyNotes = new StudynotesModel(studyNotes);
-      return await newStudyNotes.save();
+      const newStudyNotes = await StudynotesModel.insertMany(notes);
     } catch (error) {
       console.error("Error creating study notes:", error);
       throw error;
@@ -19,7 +16,9 @@ class StudyNotesRepository {
   ): Promise<IStudynotes[]> {
     try {
       const query: any = { subjectId, ...filters };
-      const studyNotes = await StudynotesModel.find(query).exec();
+      const studyNotes = await StudynotesModel.find(query)
+        .populate("file_info")
+        .exec();
       return studyNotes;
     } catch (error) {
       console.error("Error fetching study notes by subject ID:", error);

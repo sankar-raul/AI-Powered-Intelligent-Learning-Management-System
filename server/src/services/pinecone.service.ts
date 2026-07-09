@@ -1,9 +1,24 @@
 import IChunk from "@/@types/interface/chunk.interface.js";
 import appConfig from "@/config/config.js";
 import pineconeClient from "@/config/pinecone.js";
+import Chunk, { IPageContent } from "./chunking.service.js";
 
 const BATCH_SIZE = appConfig.pinecone.batchSize || 100;
 class PineConeService {
+  public static async process(
+    pages: IPageContent[],
+    document_id: string,
+    subject_id: string,
+    filename: string,
+  ) {
+    try {
+      const chunks = Chunk.fire(pages, document_id, filename, subject_id);
+      await PineConeService.upsertChunks(chunks);
+    } catch (error) {
+      console.log("[Pinecone] Error processing chunks:", error);
+      throw error;
+    }
+  }
   public static async upsertChunks(chunks: IChunk[]) {
     // batch insert 😅😊
     try {
@@ -17,6 +32,7 @@ class PineConeService {
             document_id: chunk.document_id,
             pages: JSON.stringify(chunk.pages),
             source_filename: chunk.source_filename,
+            text: chunk.chunk_text,
           })),
         });
       }

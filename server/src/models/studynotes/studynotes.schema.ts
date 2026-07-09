@@ -9,10 +9,7 @@ import DocumentModel from "../document/document.model.js";
 
 const studyNotesSchema = new Schema<IStudynotes>(
   {
-    file_id: {
-      ...SCHEMA_DEFINITION_PROPERTY.requiredObjectId,
-      unique: true,
-    },
+    file_id: SCHEMA_DEFINITION_PROPERTY.requiredObjectId,
     subjectId: SCHEMA_DEFINITION_PROPERTY.requiredObjectId,
     title: SCHEMA_DEFINITION_PROPERTY.requiredString,
     uploadedAt: SCHEMA_DEFINITION_PROPERTY.requiredDate,

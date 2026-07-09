@@ -5,11 +5,10 @@ import StudyNotesRepository from "./studynotes.repository.js";
 class DocumentRepository {
   public static async createDocument(
     document: IDocument,
-    fingerprint: String,
     user_id: string,
   ): Promise<IDocument> {
     const existingDocument = await DocumentModel.findOne({
-      file_fingerprint: fingerprint,
+      file_fingerprint: document.file_fingerprint,
     });
     if (existingDocument) {
       const duplicateUser =
@@ -23,12 +22,16 @@ class DocumentRepository {
         );
       } else {
         // increment
-        existingDocument.file_users_count += 1;
+        existingDocument.file_users_count =
+          existingDocument.file_users_count || 1 + 1;
         existingDocument.save();
       }
       return existingDocument;
     }
-    const newDocument = new DocumentModel(document);
+    const newDocument = new DocumentModel({
+      ...document,
+      file_users_count: 1,
+    });
     return await newDocument.save();
   }
   public static async getDocumentById(

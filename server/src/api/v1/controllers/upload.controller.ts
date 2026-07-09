@@ -9,7 +9,7 @@ export async function uploadFile(req: Request, res: Response) {
       });
     }
 
-    const result = await uploadToS3(req.file);
+    const result = await uploadToS3(req.file, "SYLLABUS");
 
     return res.json(result);
   } catch (err) {

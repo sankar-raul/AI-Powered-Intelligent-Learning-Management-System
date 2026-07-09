@@ -8,6 +8,8 @@ interface IRoadmap {
     {
       _id?: string;
       title: String;
+      description: String;
+      order: Number;
       topics: ITopic[];
     },
   ];
