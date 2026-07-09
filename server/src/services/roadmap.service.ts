@@ -31,7 +31,8 @@ class RoadMapService {
       ...roadmap,
       subject_id: subject_id as unknown as any,
     };
-    await RoadmapRepository.createRoadmap(roadmap);
+    console.log(roadmap);
+    await RoadmapRepository.createRoadmap(roadmapWithSubjectId);
   }
 }
 

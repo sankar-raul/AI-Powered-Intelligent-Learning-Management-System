@@ -1,122 +1,99 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 
-function App() {
-  const [count, setCount] = useState(0)
+// Auth & Toast imports
+import { AuthProvider } from './auth/AuthContext'
+import { ToastProvider } from './components/ui/toast'
+
+// Teacher features
+import TeacherAnalyticsPage from './features/teacher/pages/Analytics/TeacherAnalyticsPage'
+import CreateSubjectPage from './features/teacher/pages/CreateSubject/CreateSubjectPage'
+import DashboardPage from './features/teacher/pages/Dashboard/DashboardPage'
+import SettingsPage from './features/teacher/pages/Settings/SettingsPage'
+import SubjectDetailsPage from './features/teacher/pages/SubjectDetails/SubjectDetailsPage'
+import SubjectsPage from './features/teacher/pages/Subjects/SubjectsPage'
+import TeacherLayout from './features/teacher/components/layout/TeacherLayout'
+
+// Student & Common features
+import LandingPage from './features/student/pages/LandingPage'
+import LoginPage from './features/auth/pages/LoginPage'
+import StudentLayout from './features/student/components/layout/StudentLayout'
+import StudentDashboard from './features/student/pages/Dashboard/StudentDashboard'
+import ExploreSubjects from './features/student/pages/Explore/ExploreSubjects'
+import StudentSubjectDetails from './features/student/pages/SubjectDetails/StudentSubjectDetails'
+import TopicStudyPage from './features/student/pages/Topic/TopicStudyPage'
+import QuizPage from './features/student/pages/Quiz/QuizPage'
+import ProgressPage from './features/student/pages/Progress/ProgressPage'
+import ProfilePage from './features/student/pages/Profile/ProfilePage'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 4,
+      retry: 1,
+    },
+  },
+})
+
+function AnimatedRoutes() {
+  const location = useLocation()
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
+        className="min-h-screen flex flex-col"
+      >
+        <Routes location={location}>
+          {/* Landing & Authentication */}
+          <Route index element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<Navigate to="/login" replace />} />
 
-      <div className="ticks"></div>
+          {/* Student Portal */}
+          <Route element={<StudentLayout />}>
+            <Route path="/student" element={<Navigate to="/student/dashboard" replace />} />
+            <Route path="/student/dashboard" element={<StudentDashboard />} />
+            <Route path="/student/explore" element={<ExploreSubjects />} />
+            <Route path="/student/subjects" element={<ExploreSubjects />} />
+            <Route path="/student/subjects/:subjectId" element={<StudentSubjectDetails />} />
+            <Route path="/student/subjects/:subjectId/topic/:topicId" element={<TopicStudyPage />} />
+            <Route path="/student/subjects/:subjectId/topic/:topicId/quiz" element={<QuizPage />} />
+            <Route path="/student/progress" element={<ProgressPage />} />
+            <Route path="/student/profile" element={<ProfilePage />} />
+          </Route>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          {/* Teacher Portal */}
+          <Route element={<TeacherLayout />}>
+            <Route path="/teacher" element={<Navigate to="/teacher/dashboard" replace />} />
+            <Route path="/teacher/dashboard" element={<DashboardPage />} />
+            <Route path="/teacher/subjects" element={<SubjectsPage />} />
+            <Route path="/teacher/subjects/create" element={<CreateSubjectPage />} />
+            <Route path="/teacher/subjects/processing/:subjectId" element={<CreateSubjectPage mode="processing" />} />
+            <Route path="/teacher/subjects/:subjectId" element={<SubjectDetailsPage />} />
+            <Route path="/teacher/analytics" element={<TeacherAnalyticsPage />} />
+            <Route path="/teacher/settings" element={<SettingsPage />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Route>
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ToastProvider>
+        <AuthProvider>
+          <AnimatedRoutes />
+        </AuthProvider>
+      </ToastProvider>
+    </QueryClientProvider>
+  )
+}

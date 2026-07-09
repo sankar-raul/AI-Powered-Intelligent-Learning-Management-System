@@ -19,7 +19,9 @@ export const get = async (
       return response.data;
     }
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Something Went Wrong");
+    throw new Error(error.response?.data?.message || "Something Went Wrong", {
+      cause: error,
+    });
   }
 };
 
@@ -46,7 +48,9 @@ export const post = async (
       return response.data;
     }
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Something Went Wrong");
+    throw new Error(error.response?.data?.message || "Something Went Wrong", {
+      cause: error,
+    });
   }
 };
 
@@ -66,7 +70,9 @@ export const put = async (
       return response.data;
     }
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Something Went Wrong");
+    throw new Error(error.response?.data?.message || "Something Went Wrong", {
+      cause: error,
+    });
   }
 };
 
@@ -85,6 +91,8 @@ export const deleteRequest = async (
       return response.data;
     }
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Something Went Wrong");
+    throw new Error(error.response?.data?.message || "Something Went Wrong", {
+      cause: error,
+    });
   }
 };

@@ -19,6 +19,10 @@ const API: AxiosInstance = axios.create({
 // 🔹 Request interceptor (Add headers like Authorization if needed)
 API.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     // If the request data is FormData, remove Content-Type header to let browser set it with boundary
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];

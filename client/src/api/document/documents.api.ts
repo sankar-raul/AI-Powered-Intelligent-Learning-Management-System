@@ -21,7 +21,7 @@ export const getAllDocuments = async (): Promise<IDocument[]> => {
         return response.data;
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Failed to fetch documents';
-        throw new Error(message);
+        throw new Error(message, { cause: error });
     }
 };
 
@@ -31,7 +31,7 @@ export const getDocumentById = async (documentId: string): Promise<IDocument> =>
         return response.data;
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Failed to fetch document';
-        throw new Error(message);
+        throw new Error(message, { cause: error });
     }
 };
 
@@ -41,6 +41,6 @@ export const deleteDocument = async (documentId: string): Promise<{ message: str
         return response;
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Failed to delete document';
-        throw new Error(message);
+        throw new Error(message, { cause: error });
     }
 };

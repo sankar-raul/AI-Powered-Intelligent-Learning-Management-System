@@ -20,6 +20,7 @@
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.79.3",
     "chromadb": "^3.5.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -36,9 +37,11 @@
     "redis": "^6.1.0",
     "tiktoken": "^1.0.22",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/jsonwebtoken": "^9",
     "@types/multer": "^2.2.0",
