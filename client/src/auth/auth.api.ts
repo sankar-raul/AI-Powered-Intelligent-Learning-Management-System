@@ -3,6 +3,7 @@ import { get, post } from '@/api/apiMethod'
 export interface LoginPayload {
   email: string
   password: string
+  role?: 'student' | 'teacher'
 }
 
 export const login = async (payload: LoginPayload) => post('/auth/login', payload)

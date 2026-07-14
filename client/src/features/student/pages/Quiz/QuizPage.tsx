@@ -4,13 +4,15 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/components/ui/toast'
+import { get } from '@/api/apiMethod'
 import {
   ArrowLeft,
   Clock,
   CheckCircle2,
   Award,
   ArrowRight,
-  BrainCircuit
+  BrainCircuit,
+  Loader2
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -98,14 +100,83 @@ const QUIZZES: Record<string, { title: string; questions: Question[] }> = {
 export default function QuizPage() {
   const { subjectId, topicId } = useParams<{ subjectId: string; topicId: string }>()
   const { toast } = useToast()
-  const quizData = QUIZZES[topicId || 'topic-gradient-descent'] || QUIZZES['topic-gradient-descent']
 
+  const [quizData, setQuizData] = useState<{ title: string; questions: Question[] } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
   const [activeQuestion, setActiveQuestion] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({})
   const [confidenceRatings, setConfidenceRatings] = useState<Record<number, 'Low' | 'Medium' | 'High'>>({})
   const [submitted, setSubmitted] = useState(false)
-  const [timer, setTimer] = useState(120) // 2 minutes
+  const [timer, setTimer] = useState(180) // 3 minutes for live generated quizzes
   const [showExplanation, setShowExplanation] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    let pollInterval: NodeJS.Timeout
+
+    async function fetchQuiz() {
+      if (!subjectId || !topicId) return
+      try {
+        const res = await get(`/student/subjects/${subjectId}/topics/${topicId}/quiz`)
+        if (!active) return
+
+        if (res.generating) {
+          setGenerating(true)
+          // Retry in 4 seconds
+          pollInterval = setTimeout(fetchQuiz, 4000)
+        } else if (res.quiz) {
+          const mapped = res.quiz.questions.map((q: any, idx: number) => {
+            const ansIdx = q.options.indexOf(q.answer)
+            return {
+              id: q._id || `q-${idx}`,
+              question: q.question,
+              options: q.options,
+              answerIndex: ansIdx !== -1 ? ansIdx : 0,
+              explanation: q.explanation
+            }
+          })
+          setQuizData({
+            title: res.quiz.title,
+            questions: mapped
+          })
+          setGenerating(false)
+          setLoading(false)
+        } else {
+          throw new Error("No quiz data returned")
+        }
+      } catch (err) {
+        console.warn("Failed to load live quiz from backend. Falling back to local static mock quiz:", err)
+        if (!active) return
+        const fallback = QUIZZES[topicId || 'topic-gradient-descent'] || QUIZZES['topic-gradient-descent']
+        setQuizData(fallback)
+        setGenerating(false)
+        setLoading(false)
+      }
+    }
+
+    fetchQuiz()
+    return () => {
+      active = false
+      if (pollInterval) clearTimeout(pollInterval)
+    }
+  }, [subjectId, topicId])
+
+  if (loading || !quizData) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 py-24 text-center corner-frame border border-border bg-panel">
+        <Loader2 className="h-8 w-8 animate-spin text-accent mb-4" />
+        <p className="font-mono text-xs uppercase tracking-wider text-text-primary">
+          {generating ? "AI Compiler is synthesizing checkpoint questions..." : "Initializing secure assessment socket..."}
+        </p>
+        {generating && (
+          <p className="text-[10px] text-text-muted mt-2 uppercase tracking-wide">
+            This might take up to 10 seconds. Please do not close the terminal.
+          </p>
+        )}
+      </div>
+    )
+  }
 
   // Countdown timer logic
   useEffect(() => {

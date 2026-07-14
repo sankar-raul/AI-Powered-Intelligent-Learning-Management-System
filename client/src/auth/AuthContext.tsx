@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Setup payload
       const mockPassword = 'Password123!'
-      const res = await apiLogin({ email, password: mockPassword })
+      const res = await apiLogin({ email, password: mockPassword, role })
       
       if (res && res.token) {
         localStorage.setItem('access_token', res.token)

@@ -2,7 +2,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const nodeEnv = process.env.NODE_ENV || process.env.ENVIRONMENT || "development";
+const nodeEnv =
+  process.env.NODE_ENV || process.env.ENVIRONMENT || "development";
 const isProduction = nodeEnv === "production";
 
 const getAuthSecret = (
@@ -28,7 +29,9 @@ const refreshTokenSecret = getAuthSecret(
 );
 
 if (isProduction && accessTokenSecret === refreshTokenSecret) {
-  throw new Error("ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET must be different");
+  throw new Error(
+    "ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET must be different",
+  );
 }
 
 export const appConfig = {
@@ -57,5 +60,6 @@ export const appConfig = {
     indexHost: process.env.PINECONE_INDEX_HOST,
     batchSize: 100,
   },
+  AI_SERVICE_URL: process.env.AI_SERVICE_URL || "http://127.0.0.1:7777/v1", // llama local AI service endpoint
 };
 export default appConfig;

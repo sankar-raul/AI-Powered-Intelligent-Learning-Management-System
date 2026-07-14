@@ -1,7 +1,6 @@
 import IQuiz from "@/@types/interface/quizzes.interface.js";
 import SCHEMA_DEFINITION_PROPERTY from "@/constants/model.constant.js";
 import { Schema, VirtualTypeOptions } from "mongoose";
-import TopicModel from "../topic/topic.model.js";
 import { GENERAL_SCHEMA_OPTIONS, VIRTUAL_SCHEMA_OPTIONS } from "@/config/schemaOptions.js";
 
 const quizeSchema = new Schema<IQuiz>({
@@ -20,7 +19,7 @@ const quizeSchema = new Schema<IQuiz>({
 })
 
 const topicVirtualReference: VirtualTypeOptions<IQuiz> = {
-    ref: TopicModel,
+    ref: "roadmaps",
     localField: "topicId",
     foreignField: "_id",
     justOne: true,

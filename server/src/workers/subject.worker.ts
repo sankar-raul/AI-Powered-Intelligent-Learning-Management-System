@@ -4,6 +4,8 @@ import RoadMapService from "@/services/roadmap.service.js";
 import StudyNotesRepository from "@/repositories/studynotes.repository.js";
 import SubjectRepository from "@/repositories/subject.repository.js";
 import PineConeService from "@/services/pinecone.service.js";
+import RoadmapRepository from "@/repositories/roadmap.repositories.js";
+import quizQueue from "@/queues/quiz.queue.js";
 
 export const subjectWorker = new Worker(
   "process-subject",
@@ -29,6 +31,32 @@ export const subjectWorker = new Worker(
       syllabus,
       subject_name: seubject?.title as string,
     });
+
+    // Queue quiz generation for all roadmap topics
+    try {
+      const roadmaps = await RoadmapRepository.getRoadmapsBySubjectId(subject_id);
+      if (roadmaps && roadmaps.length > 0) {
+        const generatedRoadmap = roadmaps[0];
+        const quizJobs = [];
+        for (const unit of generatedRoadmap.units || []) {
+          for (const topic of unit.topics || []) {
+            quizJobs.push(
+              quizQueue.add("generate-quiz", {
+                subject_id: subject_id,
+                topic_id: topic._id!.toString(),
+                topic_title: topic.title as string,
+                topic_description: topic.description as string,
+              })
+            );
+          }
+        }
+        await Promise.all(quizJobs);
+        console.log(`[Subject Worker] Queued ${quizJobs.length} quiz generation jobs.`);
+      }
+    } catch (err) {
+      console.error("[Subject Worker] Error queueing quizzes:", err);
+    }
+
     console.log("chunking...");
     await Promise.all(
       notes.map((note) =>

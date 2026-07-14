@@ -55,7 +55,7 @@ class PineConeService {
         filter: filters || undefined,
       },
     });
-    return response.result.hits.concat;
+    return response.result.hits;
   }
 }
 
